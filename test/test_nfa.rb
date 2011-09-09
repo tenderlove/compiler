@@ -40,6 +40,45 @@ module Compiler
       assert_equal 'E', dtran[[1,2,4,5,6,7,10]].label
     end
 
+    def test_dfa_transition_edges
+      dtran = nfa.dfa_transitions
+      _A = dtran[nfa.eclosure(0)]
+
+      # A points to B and C
+      assert_equal 2, _A.transitions.length
+      assert_equal [:a, :b], _A.transitions.map { |t| t.symbol }
+      assert_equal 'B', _A.transitions.find { |t| t.symbol == :a }.to.label
+      assert_equal 'C', _A.transitions.find { |t| t.symbol == :b }.to.label
+
+      # B points to B and D
+      _B = _A.transitions.find { |t| t.symbol == :a }.to
+      assert_equal 2, _B.transitions.length
+      assert_equal [:a, :b], _B.transitions.map { |t| t.symbol }
+      assert_equal 'B', _B.transitions.find { |t| t.symbol == :a }.to.label
+      assert_equal 'D', _B.transitions.find { |t| t.symbol == :b }.to.label
+
+      # C points to C and B
+      _C = _A.transitions.find { |t| t.symbol == :b }.to
+      assert_equal 2, _C.transitions.length
+      assert_equal [:a, :b], _C.transitions.map { |t| t.symbol }
+      assert_equal 'B', _C.transitions.find { |t| t.symbol == :a }.to.label
+      assert_equal 'C', _C.transitions.find { |t| t.symbol == :b }.to.label
+
+      # D points to B and E
+      _D = _B.transitions.find { |t| t.symbol == :b }.to
+      assert_equal 2, _D.transitions.length
+      assert_equal [:a, :b], _D.transitions.map { |t| t.symbol }
+      assert_equal 'B', _D.transitions.find { |t| t.symbol == :a }.to.label
+      assert_equal 'E', _D.transitions.find { |t| t.symbol == :b }.to.label
+
+      # E points to C and B
+      _E = _D.transitions.find { |t| t.symbol == :b }.to
+      assert_equal 2, _E.transitions.length
+      assert_equal [:a, :b], _E.transitions.map { |t| t.symbol }
+      assert_equal 'B', _E.transitions.find { |t| t.symbol == :a }.to.label
+      assert_equal 'C', _E.transitions.find { |t| t.symbol == :b }.to.label
+    end
+
     def test_alphabet
       nfa = NFA.new figure_3_34
 
