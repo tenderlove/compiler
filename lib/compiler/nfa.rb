@@ -7,6 +7,10 @@ module Compiler
         }
       end
 
+      def nfa_states
+        @cache.keys
+      end
+
       def [] from
         @cache[from]
       end
@@ -38,17 +42,29 @@ module Compiler
 
     def dfa_transitions
       dtran = DFA::TransitionTable.new
-      seen  = {}
+      marked  = {}
       stack = [eclosure(0)]
       while !stack.empty?
         state = stack.pop
-        next if seen[state]
-        seen[state] = true # mark
+        next if marked[state]
+        marked[state] = true # mark
 
         alphabet.each do |sym|
           next_state = eclosure(move(state, sym))
           stack << next_state
           dtran[state, sym] = next_state
+        end
+      end
+
+      # find accepting states in the nfa
+      accepting_states = @tree.states.find_all { |s|
+        s.accepting?
+      }.map { |s| s.index }
+
+      # mark accepting states in the dfa
+      dtran.nfa_states.each do |states|
+        if (accepting_states - states).empty?
+          dtran[states].accepting = true
         end
       end
 

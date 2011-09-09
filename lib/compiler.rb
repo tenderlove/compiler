@@ -1,9 +1,55 @@
+# encoding: utf-8
+
 require 'compiler/nfa'
 
 module Compiler
   VERSION = '1.0.0'
 
   module Visitors
+    class Dot
+      def initialize
+        @marked = {}
+      end
+
+      def accept node
+        nodes = []
+        edges = []
+
+        stack = [node]
+        while !stack.empty?
+          n = stack.pop
+          next if marked? n
+          mark n
+
+          nodes << "#{n.index} [label=\"#{n.label || n.index}\"];"
+          n.transitions.each do |t|
+            edges << "#{n.index} -> #{t.to.index} [label=\"#{t.symbol || 'ϵ'}\"];"
+            stack << t.to
+          end
+        end
+
+        <<-eodot
+digraph finite_state_machine {
+  rankdir=LR;
+  size="8,5"
+  node [shape = doublecircle];
+  #{node.states.find_all { |s| s.accepting? }.map { |s| s.index }.join ' '};
+  node [shape = circle];
+  #{nodes.join("\n") + edges.join("\n")}
+}
+        eodot
+      end
+
+      private
+      def mark node
+        @marked[node] = true
+      end
+
+      def marked? node
+        @marked[node]
+      end
+    end
+
     class Each
       def initialize block
         @block = block
@@ -38,15 +84,22 @@ module Compiler
     include Enumerable
 
     attr_reader :index, :label, :transitions
+    attr_accessor :accepting
+    alias :accepting? :accepting
 
-    def initialize index, label = nil
+    def initialize index, label = nil, accepting = false
       @index       = index
       @label       = label
+      @accepting   = accepting
       @transitions = []
     end
 
     def each &block
       Visitors::Each.new(block).accept self
+    end
+
+    def to_dot
+      Visitors::Dot.new.accept self
     end
 
     def states

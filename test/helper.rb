@@ -6,6 +6,7 @@ module Compiler
     # Figure 3.34
     def figure_3_34
       states = 11.times.map { |i| State.new i }
+      states[10].accepting = true
 
       states[0].transitions << Edge.new(nil, states[1])
       states[0].transitions << Edge.new(nil, states[7])

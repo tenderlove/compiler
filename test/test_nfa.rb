@@ -79,6 +79,15 @@ module Compiler
       assert_equal 'C', _E.transitions.find { |t| t.symbol == :b }.to.label
     end
 
+    def test_accepting
+      dtran     = nfa.dfa_transitions
+      _A        = dtran[nfa.eclosure(0)]
+      accepting = _A.states.find_all { |s| s.accepting? }
+
+      assert_equal 1, accepting.length
+      assert_equal 'E', accepting.first.label
+    end
+
     def test_alphabet
       nfa = NFA.new figure_3_34
 
