@@ -30,6 +30,16 @@ module Compiler
       assert_equal [1,2,4,5,6,7], nfa.eclosure([5])
     end
 
+    def test_dfa_transition_states
+      dtran = nfa.dfa_transitions
+
+      assert_equal 'A', dtran[[0,1,2,4,7]].label
+      assert_equal 'B', dtran[[1,2,3,4,6,7,8]].label
+      assert_equal 'C', dtran[[1,2,4,5,6,7]].label
+      assert_equal 'D', dtran[[1,2,4,5,6,7,9]].label
+      assert_equal 'E', dtran[[1,2,4,5,6,7,10]].label
+    end
+
     def test_alphabet
       nfa = NFA.new figure_3_34
 

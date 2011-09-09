@@ -24,7 +24,7 @@ module Compiler
       private
       def state s
         @block.call s
-        s.edges.each { |e| accept e }
+        s.transitions.each { |e| accept e }
       end
 
       def edge e
@@ -37,12 +37,12 @@ module Compiler
   class State
     include Enumerable
 
-    attr_reader :name, :edges
-    alias :transitions :edges
+    attr_reader :index, :label, :transitions
 
-    def initialize name
-      @name  = name
-      @edges = []
+    def initialize index, label = nil
+      @index       = index
+      @label       = label
+      @transitions = []
     end
 
     def each &block
@@ -54,7 +54,7 @@ module Compiler
     end
 
     def nil_closures
-      nil_closures = edges.find_all { |e|
+      nil_closures = transitions.find_all { |e|
         e.symbol.nil?
       }.map { |e| e.to.nil_closures }.flatten
 
