@@ -1,6 +1,9 @@
 # encoding: utf-8
 
 require 'compiler/nfa'
+require 'journey/definition/parser'
+require 'journey/to_nfa'
+require 'journey/ast_graph'
 
 module Compiler
   VERSION = '1.0.0'
@@ -83,7 +86,7 @@ digraph finite_state_machine {
   class State
     include Enumerable
 
-    attr_reader :index, :label, :transitions
+    attr_accessor :index, :label, :transitions
     attr_accessor :accepting
     alias :accepting? :accepting
 

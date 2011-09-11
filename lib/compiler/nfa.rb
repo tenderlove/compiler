@@ -3,7 +3,7 @@ module Compiler
     class TransitionTable
       def initialize
         @cache = Hash.new { |h,nfa|
-          h[nfa] = State.new(h.length, (65 + h.length).chr)
+          h[nfa] = State.new(h.length, h.length.to_s(16))
         }
       end
 
@@ -40,6 +40,10 @@ module Compiler
       end
     end
 
+    def dfa_tree
+      dfa_transitions[eclosure(0)]
+    end
+
     def dfa_transitions
       dtran = DFA::TransitionTable.new
       marked  = {}
@@ -51,8 +55,10 @@ module Compiler
 
         alphabet.each do |sym|
           next_state = eclosure(move(state, sym))
-          stack << next_state
-          dtran[state, sym] = next_state
+          unless next_state.empty?
+            stack << next_state
+            dtran[state, sym] = next_state
+          end
         end
       end
 
